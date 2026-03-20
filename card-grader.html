@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#07090e">
+<title>CardGrade AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090e;
+  --bg2: #0c0f18;
+  --surface: #101520;
+  --surface2: #161d2e;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --gold: #c9982a;
+  --gold-l: #edb94a;
+  --gold-xl: #ffd878;
+  --gold-dim: rgba(201,152,42,0.13);
+  --cyan: #3dbde0;
+  --cyan-dim: rgba(61,189,224,0.1);
+  --text: #eef1f6;
+  --text-mid: rgba(238,241,246,0.62);
+  --text-dim: rgba(238,241,246,0.33);
+  --green: #4ec87a;
+  --green-dim: rgba(78,200,122,0.11);
+  --red: #e05252;
+  --red-dim: rgba(224,82,82,0.11);
+  --amber: #df9f38;
+  --amber-dim: rgba(223,159,56,0.11);
+  --r: 16px;
+  --r-sm: 10px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;-webkit-font-smoothing:antialiased}
+body::after{content:'';position:fixed;inset:0;z-index:9000;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.024}
+
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden}
+.screen.hidden{display:none}
+
+/* NAV */
+.nav{display:flex;align-items:center;padding:52px 18px 14px;flex-shrink:0;border-bottom:1px solid var(--border);background:rgba(7,9,14,0.93);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.nav-back{width:38px;height:38px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0}
+.nav-back:active{background:var(--surface2)}
+.nav-title{flex:1;text-align:center;font-size:16px;font-weight:600}
+.nav-right{width:38px;flex-shrink:0}
+
+/* BUTTONS */
+.btn-gold{width:100%;max-width:380px;background:linear-gradient(135deg,var(--gold),var(--gold-xl));color:#07090e;font-family:'Syne',sans-serif;font-weight:700;font-size:16px;border:none;border-radius:50px;padding:18px 32px;cursor:pointer;box-shadow:0 6px 28px rgba(201,152,42,0.35);transition:opacity 0.15s,transform 0.1s}
+.btn-gold:active{opacity:0.85;transform:scale(0.98)}
+.btn-outline{background:none;border:1px solid var(--border2);color:var(--text-mid);font-family:'Syne',sans-serif;font-size:14px;font-weight:500;border-radius:50px;padding:13px 28px;cursor:pointer}
+.btn-surface{background:var(--surface);border:1px solid var(--border);color:var(--text-mid);font-family:'Syne',sans-serif;font-size:14px;font-weight:500;border-radius:50px;padding:13px 28px;cursor:pointer}
+
+/* ── HOME ── */
+#home{justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.home-header{padding:60px 24px 24px;text-align:center}
+.brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px}
+.brand-badge{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),var(--gold-xl));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 18px rgba(201,152,42,0.4)}
+.brand-name{font-size:25px;font-weight:800;letter-spacing:-0.4px;background:linear-gradient(135deg,var(--gold-xl),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.home-headline{font-size:30px;font-weight:800;line-height:1.18;letter-spacing:-0.7px;margin-bottom:12px}
+.home-headline em{font-style:italic;font-family:'Lora',serif;font-weight:400;color:var(--gold-l)}
+.home-sub{font-size:14px;color:var(--text-mid);line-height:1.6;max-width:290px;margin:0 auto}
+.flow-steps{margin:24px 18px 0;display:flex;flex-direction:column;gap:8px}
+.flow-step{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.step-num{width:26px;height:26px;flex-shrink:0;background:var(--gold-dim);border:1px solid rgba(201,152,42,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);font-weight:500}
+.step-info{flex:1}
+.step-title{font-size:13px;font-weight:600;margin-bottom:1px}
+.step-desc{font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace}
+.step-icon{font-size:20px}
+.step-arrow{text-align:center;font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace}
+.home-footer{padding:22px 18px calc(var(--safe-b) + 20px);display:flex;flex-direction:column;align-items:center}
+
+/* ── SETUP ── */
+#setup{background:var(--bg)}
+.setup-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 0;display:flex;flex-direction:column;gap:12px}
+.field-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.field-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+.field-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;font-family:'DM Mono',monospace;font-size:13px;color:var(--text);outline:none;transition:border-color 0.15s}
+.field-input:focus{border-color:rgba(201,152,42,0.5)}
+.field-input::placeholder{color:var(--text-dim)}
+.field-hint{font-size:11px;color:var(--text-dim);margin-top:7px;line-height:1.5}
+.drop-zone{background:var(--surface);border:2px dashed rgba(201,152,42,0.2);border-radius:var(--r);min-height:190px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color 0.2s}
+.drop-zone:active{border-color:var(--gold)}
+.drop-zone img.preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:calc(var(--r) - 2px)}
+.drop-inner{display:flex;flex-direction:column;align-items:center;gap:9px;pointer-events:none;text-align:center;padding:20px}
+.drop-icon{font-size:34px}
+.drop-lbl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+.drop-sub{font-size:12px;color:var(--text-dim);line-height:1.5}
+.drop-overlay{position:absolute;inset:0;background:rgba(7,9,14,0.5);display:flex;align-items:flex-end;justify-content:center;padding:12px;opacity:0;transition:opacity 0.2s}
+.drop-zone.has-image .drop-overlay{opacity:1}
+.retake-btn{background:rgba(7,9,14,0.85);border:1px solid var(--border2);color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:500;border-radius:50px;padding:8px 18px;cursor:pointer}
+.pill-row{display:flex;gap:7px;flex-wrap:wrap}
+.pill{background:var(--bg2);border:1px solid var(--border);color:var(--text-mid);font-family:'Syne',sans-serif;font-size:12px;font-weight:500;border-radius:50px;padding:8px 14px;cursor:pointer;transition:all 0.15s;flex-shrink:0}
+.pill.active{background:var(--gold-dim);border-color:rgba(201,152,42,0.5);color:var(--gold-l)}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chk{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px;display:flex;flex-direction:column;gap:4px;cursor:pointer;transition:all 0.15s;user-select:none}
+.chk.active{background:var(--gold-dim);border-color:rgba(201,152,42,0.4)}
+.chk-top{display:flex;align-items:center;justify-content:space-between}
+.chk-icon{font-size:17px}
+.chk-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:background 0.15s}
+.chk.active .chk-dot{background:var(--gold)}
+.chk-name{font-size:12px;font-weight:600}
+.chk.active .chk-name{color:var(--gold-l)}
+.chk-desc{font-size:10px;color:var(--text-dim);font-family:'DM Mono',monospace;line-height:1.4}
+.setup-footer{padding:14px 16px calc(var(--safe-b) + 14px);flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:9px}
+input[type="file"]{display:none}
+
+/* ── LOADING ── */
+#loading{align-items:center;justify-content:center}
+.loading-stage{width:100%;display:flex;flex-direction:column;align-items:center;padding:40px 32px;gap:26px}
+.loading-card-wrap{position:relative;width:145px;height:204px}
+.loading-card-img{width:100%;height:100%;border-radius:11px;object-fit:cover;border:1px solid var(--border2);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+.loading-scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-l),transparent);animation:lscan 2s ease-in-out infinite;border-radius:1px}
+.loading-scan.cyan{background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+@keyframes lscan{0%{top:8%;opacity:0}8%{opacity:0.8}92%{opacity:0.8}100%{top:92%;opacity:0}}
+.stage-badge{background:var(--gold-dim);border:1px solid rgba(201,152,42,0.3);border-radius:50px;padding:4px 14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+.stage-badge.cyan-badge{background:var(--cyan-dim);border-color:rgba(61,189,224,0.3);color:var(--cyan)}
+.loading-copy{text-align:center}
+.loading-h{font-size:21px;font-weight:700;margin-bottom:7px}
+.loading-step{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-dim);letter-spacing:1px;min-height:18px;transition:opacity 0.3s}
+.loading-dots{display:flex;gap:7px;justify-content:center;margin-top:16px}
+.ld{width:7px;height:7px;border-radius:50%;background:var(--gold);opacity:0.3;animation:ldot 1.3s ease-in-out infinite}
+.ld:nth-child(2){animation-delay:0.2s}.ld:nth-child(3){animation-delay:0.4s}
+@keyframes ldot{0%,80%,100%{transform:scale(0.7);opacity:0.3}40%{transform:scale(1.3);opacity:1}}
+
+/* ── RESULTS ── */
+#results{background:var(--bg)}
+.results-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 120px}
+
+/* ─ Overall Grade Hero ─ */
+.grade-hero{margin:14px 0;background:linear-gradient(150deg,var(--surface2),var(--surface));border:1px solid rgba(201,152,42,0.22);border-radius:var(--r);overflow:hidden;box-shadow:0 10px 36px rgba(0,0,0,0.4);position:relative}
+.grade-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-l),transparent);opacity:0.5}
+.grade-hero-top{display:flex;align-items:stretch}
+.grade-thumb{width:86px;flex-shrink:0;position:relative;overflow:hidden}
+.grade-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.grade-thumb-overlay{position:absolute;inset:0;background:linear-gradient(to right,transparent 50%,var(--surface))}
+.grade-main{flex:1;padding:18px 16px 16px}
+.grade-num-row{display:flex;align-items:baseline;gap:4px;margin-bottom:1px}
+.grade-big{font-size:56px;font-weight:800;line-height:1;letter-spacing:-2px}
+.grade-big.g-gem{color:var(--gold-xl)}
+.grade-big.g-green{color:var(--green)}
+.grade-big.g-amber{color:var(--amber)}
+.grade-big.g-red{color:var(--red)}
+.grade-denom{font-family:'DM Mono',monospace;font-size:15px;color:var(--text-dim)}
+.grade-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.grade-verdict{font-size:12px;color:var(--text-mid);line-height:1.6}
+.grade-divider{height:1px;background:var(--border);margin:0 16px}
+.grade-narrative{padding:14px 16px;font-family:'Lora',serif;font-size:13px;color:var(--text-mid);line-height:1.8;font-style:italic}
+
+/* ─ Section label ─ */
+.section-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);margin:18px 0 9px}
+
+/* ─ Sub-scores row ─ */
+.subscores-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.subscore-cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 8px;text-align:center}
+.subscore-val{font-size:20px;font-weight:800;line-height:1;margin-bottom:2px}
+.subscore-val.g-gem{color:var(--gold-xl)}
+.subscore-val.g-green{color:var(--green)}
+.subscore-val.g-amber{color:var(--amber)}
+.subscore-val.g-red{color:var(--red)}
+.subscore-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase}
+
+/* ─ Centering card ─ */
+.center-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.center-title{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.center-icon{font-size:18px}
+.center-name{font-size:14px;font-weight:700;flex:1}
+.center-score{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+
+/* Centering diagram */
+.center-diagram{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:12px}
+.center-axis-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px}
+
+/* LR bar */
+.center-bar-wrap{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.center-side-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);width:24px;flex-shrink:0;text-align:center}
+.center-bar{flex:1;height:22px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;position:relative;display:flex}
+.center-bar-left{height:100%;transition:width 1s cubic-bezier(0.4,0,0.2,1);display:flex;align-items:center;justify-content:flex-end;padding-right:5px}
+.center-bar-right{flex:1;height:100%;display:flex;align-items:center;padding-left:5px}
+.center-bar-pct{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;white-space:nowrap}
+.center-mid-line{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.15);transform:translateX(-50%)}
+.center-ratio-display{text-align:center;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;margin-top:4px}
+.center-verdict-chip{display:inline-block;padding:3px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;margin-top:6px;letter-spacing:0.5px}
+
+/* ─ Corners card ─ */
+.corners-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.corners-title{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.corners-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.corner-cell{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;position:relative}
+.corner-cell.ding{border-color:rgba(224,82,82,0.4);background:rgba(224,82,82,0.05)}
+.corner-cell.warn{border-color:rgba(223,159,56,0.4);background:rgba(223,159,56,0.05)}
+.corner-cell.good{border-color:rgba(78,200,122,0.3);background:rgba(78,200,122,0.04)}
+.corner-pos{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
+.corner-rating{font-size:13px;font-weight:700;margin-bottom:3px}
+.corner-rating.g-green{color:var(--green)}
+.corner-rating.g-amber{color:var(--amber)}
+.corner-rating.g-red{color:var(--red)}
+.corner-detail{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.4}
+.ding-badge{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;padding:2px 6px;border-radius:4px;font-weight:500}
+.warn-badge{position:absolute;top:8px;right:8px;background:var(--amber);color:#07090e;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;padding:2px 6px;border-radius:4px;font-weight:500}
+
+/* ─ Edges card ─ */
+.edges-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.edges-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.edge-cell{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+.edge-cell.ding{border-color:rgba(224,82,82,0.4);background:rgba(224,82,82,0.05)}
+.edge-cell.warn{border-color:rgba(223,159,56,0.4);background:rgba(223,159,56,0.05)}
+.edge-cell.good{border-color:rgba(78,200,122,0.3);background:rgba(78,200,122,0.04)}
+
+/* ─ Surface card ─ */
+.surface-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.defects-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.defect-row{display:flex;align-items:flex-start;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 11px}
+.defect-row.ding{border-color:rgba(224,82,82,0.35);background:rgba(224,82,82,0.05)}
+.defect-row.warn{border-color:rgba(223,159,56,0.35);background:rgba(223,159,56,0.05)}
+.defect-row.ok{border-color:rgba(78,200,122,0.25);background:rgba(78,200,122,0.04)}
+.defect-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.defect-body{flex:1}
+.defect-title{font-size:12px;font-weight:600;margin-bottom:1px}
+.defect-desc{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.4}
+.defect-severity{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-left:auto;flex-shrink:0;padding-top:2px}
+.defect-severity.sev-ding{color:var(--red)}
+.defect-severity.sev-warn{color:var(--amber)}
+.defect-severity.sev-ok{color:var(--green)}
+
+/* DINGS tally */
+.dings-tally{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;margin-bottom:12px}
+.ding-pill{display:flex;align-items:center;gap:5px;background:var(--red-dim);border:1px solid rgba(224,82,82,0.3);border-radius:6px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--red)}
+.ding-pill.warn{background:var(--amber-dim);border-color:rgba(223,159,56,0.3);color:var(--amber)}
+
+/* Generic score bar row */
+.sbar-row{margin-bottom:10px}
+.sbar-label-row{display:flex;justify-content:space-between;margin-bottom:5px}
+.sbar-label{font-size:12px;font-weight:600}
+.sbar-val{font-family:'DM Mono',monospace;font-size:12px}
+.sbar-val.g-green{color:var(--green)}.sbar-val.g-amber{color:var(--amber)}.sbar-val.g-red{color:var(--red)}.sbar-val.g-gem{color:var(--gold-xl)}
+.sbar-track{height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:2px;transition:width 1.1s cubic-bezier(0.4,0,0.2,1)}
+.sf-gem{background:linear-gradient(90deg,var(--gold),var(--gold-xl))}
+.sf-green{background:linear-gradient(90deg,var(--green),#7de0a0)}
+.sf-amber{background:linear-gradient(90deg,var(--amber),#f0c060)}
+.sf-red{background:linear-gradient(90deg,var(--red),#f07070)}
+
+.cat-notes{font-size:12px;color:var(--text-mid);line-height:1.65}
+
+/* ─ ID / Comp ─ */
+.id-comp-card{background:linear-gradient(145deg,var(--surface2),var(--surface));border:1px solid rgba(61,189,224,0.2);border-radius:var(--r);overflow:hidden;margin-bottom:10px;position:relative}
+.id-comp-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.5}
+.id-comp-loading{padding:26px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:11px}
+.id-spinner{width:30px;height:30px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.id-loading-lbl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan)}
+.id-loading-sub{font-size:11px;color:var(--text-dim)}
+.id-comp-content{padding:18px}
+.id-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
+.id-name-block{flex:1}
+.id-player{font-size:21px;font-weight:800;letter-spacing:-0.4px;margin-bottom:2px;line-height:1.2}
+.id-year-set{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:0.4px}
+.id-rc-badge{background:linear-gradient(135deg,var(--gold),var(--gold-xl));color:#07090e;font-family:'DM Mono',monospace;font-size:8px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:4px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0;margin-top:3px}
+.id-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.id-detail{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 11px}
+.id-detail-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px}
+.id-detail-val{font-size:12px;font-weight:600}
+.comp-divider{height:1px;background:var(--border);margin-bottom:14px}
+.comp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.comp-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--cyan)}
+.comp-grade-context{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim)}
+.comp-price-row{display:flex;align-items:baseline;gap:7px;margin-bottom:12px}
+.comp-price{font-size:36px;font-weight:800;letter-spacing:-1px;color:var(--gold-l)}
+.comp-range{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-dim)}
+.comp-grade-rows{display:flex;flex-direction:column;gap:6px;margin-bottom:11px}
+.comp-grade-row{display:flex;align-items:center;gap:9px;font-size:11px}
+.comp-grade-label{font-family:'DM Mono',monospace;color:var(--text-dim);width:70px;flex-shrink:0}
+.comp-grade-bar{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.comp-grade-fill{height:100%;border-radius:2px;background:var(--cyan);transition:width 1s cubic-bezier(0.4,0,0.2,1)}
+.comp-grade-price{font-family:'DM Mono',monospace;color:var(--text-mid);width:52px;text-align:right;flex-shrink:0;font-size:10px}
+.comp-notes{font-size:11px;color:var(--text-dim);line-height:1.6;font-family:'DM Mono',monospace;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 11px}
+.comp-disclaimer{font-size:10px;color:var(--text-dim);margin-top:9px;font-family:'DM Mono',monospace;line-height:1.5;opacity:0.65}
+
+.error-box{background:var(--red-dim);border:1px solid rgba(224,82,82,0.3);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--red);line-height:1.5;margin-bottom:9px}
+
+.results-bar{position:fixed;bottom:0;left:0;right:0;padding:12px 16px calc(var(--safe-b) + 12px);background:linear-gradient(to top,var(--bg) 60%,transparent);display:flex;gap:9px}
+.results-bar .btn-surface{flex:1}
+.results-bar .btn-gold{flex:2;max-width:none;font-size:14px;padding:14px}
+</style>
+</head>
+<body>
+
+<!-- ══ HOME ══ -->
+<div class="screen" id="home">
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <div class="home-header">
+      <div class="brand">
+        <div class="brand-badge">🏅</div>
+        <div class="brand-name">CardGrade AI</div>
+      </div>
+      <div class="home-headline">Professional grading,<br><em>in your pocket.</em></div>
+      <div class="home-sub" style="margin-top:10px">TAG-style centering ratios, per-corner analysis, surface DINGS, and market comps — all from a photo.</div>
+    </div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-info"><div class="step-title">Photograph the Card</div><div class="step-desc">Flat surface · clear light · sharp focus</div></div>
+        <div class="step-icon">📷</div>
+      </div>
+      <div class="step-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-info"><div class="step-title">Detailed Grade Report</div><div class="step-desc">Centering ratios · per-corner · DINGS</div></div>
+        <div class="step-icon">🔍</div>
+      </div>
+      <div class="step-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-info"><div class="step-title">Card ID &amp; Market Value</div><div class="step-desc">Player · set · parallel · eBay comps</div></div>
+        <div class="step-icon">💰</div>
+      </div>
+    </div>
+    <div class="home-footer"><button class="btn-gold" onclick="show('setup')">Grade a Card</button></div>
+  </div>
+</div>
+
+<!-- ══ SETUP ══ -->
+<div class="screen hidden" id="setup">
+  <div class="nav">
+    <div class="nav-back" onclick="show('home')">←</div>
+    <div class="nav-title">Set Up Analysis</div>
+    <div class="nav-right"></div>
+  </div>
+  <div class="setup-scroll">
+    <div class="field-block">
+      <div class="field-label">Anthropic API Key</div>
+      <input type="password" class="field-input" id="apiKey" placeholder="sk-ant-api03-…"/>
+      <div class="field-hint">Used only in this session · never stored</div>
+    </div>
+    <div class="field-block" style="padding:0;overflow:hidden">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="drop-inner" id="dropInner">
+          <div class="drop-icon">📷</div>
+          <div class="drop-lbl">Tap to Add Photo</div>
+          <div class="drop-sub">Take a photo or pick from camera roll.<br>Flat, well-lit, sharp focus works best.</div>
+        </div>
+        <div class="drop-overlay">
+          <button class="retake-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">📷 Retake / Change</button>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" onchange="handleImage(event)">
+    <div class="field-block">
+      <div class="field-label">Card Type</div>
+      <div class="pill-row">
+        <div class="pill active" onclick="selectType(this,'Sports Card')">⚾ Sports</div>
+        <div class="pill" onclick="selectType(this,'Pokémon Card')">⚡ Pokémon</div>
+        <div class="pill" onclick="selectType(this,'Basketball Card')">🏀 Basketball</div>
+        <div class="pill" onclick="selectType(this,'Football Card')">🏈 Football</div>
+        <div class="pill" onclick="selectType(this,'Trading Card Game')">🃏 Other TCG</div>
+      </div>
+    </div>
+    <div style="height:4px"></div>
+  </div>
+  <div class="setup-footer">
+    <button class="btn-gold" onclick="startGrading()">Analyze Card</button>
+    <button class="btn-outline" onclick="show('home')">Cancel</button>
+  </div>
+</div>
+
+<!-- ══ LOADING ══ -->
+<div class="screen hidden" id="loading">
+  <div class="loading-stage">
+    <div class="loading-card-wrap">
+      <img class="loading-card-img" id="loadCardImg" src="" alt="">
+      <div class="loading-scan" id="loadScan"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+      <div class="stage-badge" id="stageBadge">Stage 1 of 2</div>
+      <div class="loading-copy">
+        <div class="loading-h" id="loadH">Grading Condition</div>
+        <div class="loading-step" id="loadStep">Scanning card boundaries…</div>
+      </div>
+      <div class="loading-dots"><div class="ld"></div><div class="ld"></div><div class="ld"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="screen hidden" id="results">
+  <div class="nav">
+    <div class="nav-back" onclick="show('setup')">←</div>
+    <div class="nav-title">Grade Report</div>
+    <div class="nav-right"></div>
+  </div>
+  <div class="results-scroll" id="resultsScroll"></div>
+  <div class="results-bar">
+    <button class="btn-surface" onclick="show('setup')">Re-grade</button>
+    <button class="btn-gold" onclick="show('home')">New Card</button>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let imgB64=null,imgSrc=null,cardType='Sports Card',gradeData=null,stepTimer=null;
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
+function selectType(el,t){document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');cardType=t}
+
+function handleImage(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    imgSrc=ev.target.result;imgB64=imgSrc.split(',')[1];
+    const dz=document.getElementById('dropZone');
+    dz.classList.add('has-image');document.getElementById('dropInner').style.opacity='0';
+    dz.querySelectorAll('img.preview').forEach(i=>i.remove());
+    const img=document.createElement('img');img.className='preview';img.src=imgSrc;dz.insertBefore(img,dz.firstChild);
+  };reader.readAsDataURL(file);
+}
+
+const gradeSteps=['Scanning card boundaries…','Measuring centering ratios L/R and T/B…','Inspecting all 4 corners…','Checking edge quality…','Analyzing surface for DINGS…','Computing final grade…'];
+const idSteps=['Reading player name & team…','Identifying set and year…','Detecting parallel variant…','Checking rookie card status…','Estimating market value…','Compiling grade comps…'];
+
+function setLoadingStage(stage){
+  const isId=stage===2;
+  document.getElementById('stageBadge').textContent=`Stage ${stage} of 2`;
+  document.getElementById('stageBadge').className='stage-badge'+(isId?' cyan-badge':'');
+  document.getElementById('loadH').textContent=isId?'Identifying Card':'Grading Condition';
+  document.getElementById('loadScan').className='loading-scan'+(isId?' cyan':'');
+  animateSteps(isId?idSteps:gradeSteps);
+}
+function animateSteps(steps){
+  clearInterval(stepTimer);let i=0;
+  const el=document.getElementById('loadStep');el.textContent=steps[0];el.style.opacity='1';
+  stepTimer=setInterval(()=>{i=(i+1)%steps.length;el.style.opacity='0';setTimeout(()=>{el.textContent=steps[i];el.style.opacity='1'},300)},2000);
+}
+
+async function startGrading(){
+  const apiKey=document.getElementById('apiKey').value.trim();
+  if(!apiKey){alert('Please enter your Anthropic API key.');return}
+  if(!imgB64){alert('Please add a card photo first.');return}
+  document.getElementById('loadCardImg').src=imgSrc;
+  show('loading');setLoadingStage(1);
+
+  const gradePrompt=`You are an elite trading card grader combining the precision of TAG, PSA, BGS, and Beckett.
+
+Analyze this ${cardType} image with professional grading precision.
+
+Return ONLY valid JSON, no markdown, no preamble:
+{
+  "overallGrade": <1.0–10.0 one decimal>,
+  "overallLabel": "<Gem Mint|Mint|Near Mint-Mint|Near Mint|Excellent-Mint|Excellent|Very Good-Excellent|Very Good|Good|Poor>",
+  "verdict": "<2-sentence overall condition summary>",
+  "narrative": "<3-4 sentences of formal expert grader commentary, first person>",
+  "centering": {
+    "score": <1.0–10.0>,
+    "leftRightFront": "<e.g. 52/48 — always expressed as larger/smaller, left side first>",
+    "topBottomFront": "<e.g. 55/45 — top side first>",
+    "leftRightBack": "<e.g. 60/40 or 'Not visible'>",
+    "topBottomBack": "<e.g. 65/35 or 'Not visible'>",
+    "assessment": "<Sharp/Acceptable/Off-Center/Severely Off-Center>",
+    "notes": "<1-2 sentences on centering quality>"
+  },
+  "corners": {
+    "score": <1.0–10.0>,
+    "topLeft": { "rating": "<Sharp|Light Touch|Wear|Significant Wear|Damaged>", "detail": "<specific observation>", "severity": "<good|warn|ding>" },
+    "topRight": { "rating": "<Sharp|Light Touch|Wear|Significant Wear|Damaged>", "detail": "<specific observation>", "severity": "<good|warn|ding>" },
+    "bottomLeft": { "rating": "<Sharp|Light Touch|Wear|Significant Wear|Damaged>", "detail": "<specific observation>", "severity": "<good|warn|ding>" },
+    "bottomRight": { "rating": "<Sharp|Light Touch|Wear|Significant Wear|Damaged>", "detail": "<specific observation>", "severity": "<good|warn|ding>" },
+    "notes": "<1-2 sentences on corner quality overall>"
+  },
+  "edges": {
+    "score": <1.0–10.0>,
+    "top": { "rating": "<Clean|Minor Wear|Chipping|Significant Damage>", "detail": "<specific observation>", "severity": "<good|warn|ding>" },
+    "bottom": { "rating": "<Clean|Minor Wear|Chipping|Significant Damage>", "detail": "<specific observation>", "severity": "<good|warn|ding>" },
+    "left": { "rating": "<Clean|Minor Wear|Chipping|Significant Damage>", "detail": "<specific observation>", "severity": "<good|warn|ding>" },
+    "right": { "rating": "<Clean|Minor Wear|Chipping|Significant Damage>", "detail": "<specific observation>", "severity": "<good|warn|ding>" },
+    "notes": "<1-2 sentences>"
+  },
+  "surface": {
+    "score": <1.0–10.0>,
+    "glossRetention": "<Pristine|Excellent|Good|Fair|Poor>",
+    "defects": [
+      {
+        "type": "<e.g. Print Line|Scratch|Dimple|Crease|Stain|Haze|Roller Mark|Color Fade|none>",
+        "location": "<e.g. Upper right corner|Center|Entire surface|Back>",
+        "severity": "<ding|warn|ok>",
+        "detail": "<specific description>"
+      }
+    ],
+    "notes": "<1-2 sentences on surface quality>"
+  }
+}
+
+Grading scale (TAG-aligned): 10=Gem Mint (≤51/49 centering, virtually flawless), 9=Mint (≤55/45, sharp corners, minor surface flaws), 8=NM-MT (≤60/40, sharp corners with light touches), 7=NM (≤65/35, minor corner wear), 6=EX-MT (≤70/30), 5=EX (≤75/25), 4=VG-EX (≤80/20), 3=VG, 2=Good, 1=Poor.
+
+For centering: estimate border width ratios from what you can see. Express as dominant%/recessive% (e.g. if left border looks wider, write 58/42 left/right).
+For corners: examine each individually — fraying, blunting, white showing, rounded tips.
+For surface: identify each specific defect separately — scratches, print lines, dimples, hazing, roller marks, creases. If the surface looks clean, include one "ok" defect entry stating it.
+Be specific and honest. Note photo limitations.`;
+
+  try{
+    const r=await callAPI(apiKey,gradePrompt);
+    gradeData=JSON.parse(r.replace(/```json|```/g,'').trim());
+  }catch(err){
+    clearInterval(stepTimer);show('setup');showError(err.message);return;
+  }
+  renderGradeResults(gradeData);
+  show('results');
+  startIdentification(apiKey);
+}
+
+async function startIdentification(apiKey){
+  const sec=document.getElementById('idCompSection');if(!sec)return;
+  sec.innerHTML=`<div class="id-comp-card"><div class="id-comp-loading"><div class="id-spinner"></div><div class="id-loading-lbl">Identifying Card</div><div class="id-loading-sub">Reading set, year, parallel, estimating value…</div></div></div>`;
+  const gNum=parseFloat(gradeData.overallGrade).toFixed(1);
+  const gLbl=gradeData.overallLabel||'';
+  const idPrompt=`You are an expert ${cardType} identifier and seasoned collector who tracks eBay sold listings.
+Analyze this image. The card has been graded ${gNum}/10 (${gLbl}).
+Respond ONLY with valid JSON, no markdown:
+{
+  "player":"<full name>","year":"<year>","brand":"<brand>","set":"<set name>",
+  "cardNumber":"<# or null>","parallel":"<variant or null>","isRookie":<true|false>,
+  "sport":"<sport>","team":"<team>","confidence":"<high|medium|low>",
+  "confidenceNote":"<1 sentence if not high, else null>",
+  "comp":{
+    "gradedPrice":<number>,"gradedLow":<number>,"gradedHigh":<number>,
+    "gradePrices":[
+      {"grade":"PSA 10","price":<number or null>},{"grade":"PSA 9","price":<number or null>},
+      {"grade":"PSA 8","price":<number or null>},{"grade":"PSA 7","price":<number or null>},
+      {"grade":"Raw NM","price":<number or null>}
+    ],
+    "marketNotes":"<2-3 sentences on demand and value drivers>",
+    "lastUpdatedNote":"Estimates based on AI training data — verify on eBay or 130point.com"
+  }
+}`;
+  try{
+    const r=await callAPI(apiKey,idPrompt);
+    const idData=JSON.parse(r.replace(/```json|```/g,'').trim());
+    renderIDComp(idData,gNum);
+  }catch(err){
+    if(sec)sec.innerHTML=`<div class="error-box">⚠ Card ID failed: ${err.message}</div>`;
+  }
+}
+
+async function callAPI(apiKey,prompt){
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2200,messages:[{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgB64}},
+      {type:'text',text:prompt}
+    ]}]})
+  });
+  if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error?.message||`API error ${resp.status}`)}
+  const d=await resp.json();
+  return d.content.map(b=>b.text||'').join('');
+}
+
+// ── HELPERS ──
+function gClass(s){return s>=9.5?'g-gem':s>=8?'g-green':s>=6?'g-amber':'g-red'}
+function sfClass(s){return s>=9.5?'sf-gem':s>=8?'sf-green':s>=6?'sf-amber':'sf-red'}
+function sevClass(sev){return sev==='ding'?'ding':sev==='warn'?'warn':'good'}
+function cornerGClass(rating){
+  if(!rating)return 'g-green';
+  const r=rating.toLowerCase();
+  if(r.includes('sharp'))return 'g-green';
+  if(r.includes('light'))return 'g-amber';
+  return 'g-red';
+}
+function edgeGClass(rating){
+  if(!rating)return 'g-green';
+  const r=rating.toLowerCase();
+  if(r.includes('clean'))return 'g-green';
+  if(r.includes('minor'))return 'g-amber';
+  return 'g-red';
+}
+function centerBar(pct,side){
+  // pct = the dominant side percentage e.g. 58 means 58/42
+  const isLeft=side==='left';
+  const fillColor=pct<=52?'#4ec87a':pct<=56?'#edb94a':'#e05252';
+  return fillColor;
+}
+
+// ── RENDER GRADE ──
+function renderGradeResults(data){
+  const g=parseFloat(data.overallGrade).toFixed(1);
+  const gc=gClass(data.overallGrade);
+  let h='';
+
+  // ── Overall Hero ──
+  h+=`<div class="grade-hero">
+    <div class="grade-hero-top">
+      <div class="grade-thumb"><img src="${imgSrc}" alt=""><div class="grade-thumb-overlay"></div></div>
+      <div class="grade-main">
+        <div class="grade-num-row"><span class="grade-big ${gc}">${g}</span><span class="grade-denom">/10</span></div>
+        <div class="grade-lbl">${data.overallLabel||'Grade'}</div>
+        <div class="grade-verdict">${data.verdict||''}</div>
+      </div>
+    </div>
+    <div class="grade-divider"></div>
+    <div class="grade-narrative">${data.narrative||''}</div>
+  </div>`;
+
+  // ── Sub-scores row ──
+  const cen=data.centering||{};const cor=data.corners||{};const edg=data.edges||{};const sur=data.surface||{};
+  h+=`<div class="section-label">Category Scores</div>
+  <div class="subscores-grid">
+    <div class="subscore-cell"><div class="subscore-val ${gClass(cen.score||0)}">${parseFloat(cen.score||0).toFixed(1)}</div><div class="subscore-lbl">Center</div></div>
+    <div class="subscore-cell"><div class="subscore-val ${gClass(cor.score||0)}">${parseFloat(cor.score||0).toFixed(1)}</div><div class="subscore-lbl">Corners</div></div>
+    <div class="subscore-cell"><div class="subscore-val ${gClass(edg.score||0)}">${parseFloat(edg.score||0).toFixed(1)}</div><div class="subscore-lbl">Edges</div></div>
+    <div class="subscore-cell"><div class="subscore-val ${gClass(sur.score||0)}">${parseFloat(sur.score||0).toFixed(1)}</div><div class="subscore-lbl">Surface</div></div>
+  </div>`;
+
+  // ── Centering ──
+  h+=`<div class="section-label">Centering</div>`;
+  if(cen.score!=null){
+    const cs=parseFloat(cen.score);
+    const lrF=cen.leftRightFront||'?/?';
+    const tbF=cen.topBottomFront||'?/?';
+    const lrB=cen.leftRightBack||'N/A';
+    const tbB=cen.topBottomBack||'N/A';
+
+    function parsePct(str){const m=str.match(/(\d+)\s*\/\s*(\d+)/);return m?[parseInt(m[1]),parseInt(m[2])]:null}
+    function centerBarHTML(str,axis){
+      const p=parsePct(str);if(!p)return '';
+      const dom=p[0],rec=p[1];
+      const total=dom+rec;const domPct=(dom/total*100).toFixed(0);
+      const color=dom<=52?'var(--green)':dom<=56?'var(--amber)':'var(--red)';
+      const labels=axis==='lr'?['L','R']:['T','B'];
+      return `<div class="center-bar-wrap">
+        <span class="center-side-lbl" style="color:var(--text-dim)">${labels[0]}</span>
+        <div class="center-bar">
+          <div class="center-bar-left" style="width:${domPct}%;background:${color}20;border-right:2px solid ${color}">
+            <span class="center-bar-pct" style="color:${color};font-size:9px">${dom}%</span>
+          </div>
+          <div class="center-bar-right" style="background:rgba(255,255,255,0.03)">
+            <span class="center-bar-pct" style="color:var(--text-dim);font-size:9px">${rec}%</span>
+          </div>
+          <div class="center-mid-line"></div>
+        </div>
+        <span class="center-side-lbl" style="color:var(--text-dim)">${labels[1]}</span>
+      </div>
+      <div style="text-align:center;font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:${color};margin-bottom:8px">${dom}/${rec}</div>`;
+    }
+
+    const chipColor=cs>=9?'var(--green)':cs>=7?'var(--amber)':'var(--red)';
+    const chipBg=cs>=9?'var(--green-dim)':cs>=7?'var(--amber-dim)':'var(--red-dim)';
+
+    h+=`<div class="center-card">
+      <div class="center-title">
+        <span class="center-icon">⬜️</span>
+        <span class="center-name">Centering</span>
+        <span class="center-score ${gClass(cs)}">${cs.toFixed(1)}</span>
+      </div>
+      <div class="center-diagram">
+        <div class="center-axis-label">Front · Left / Right</div>
+        ${centerBarHTML(lrF,'lr')}
+        <div class="center-axis-label" style="margin-top:4px">Front · Top / Bottom</div>
+        ${centerBarHTML(tbF,'tb')}
+        ${lrB!='N/A'&&lrB!='Not visible'?`<div class="center-axis-label" style="margin-top:4px;opacity:0.6">Back · Left / Right</div>${centerBarHTML(lrB,'lr')}`:''}
+        ${tbB!='N/A'&&tbB!='Not visible'?`<div class="center-axis-label" style="opacity:0.6">Back · Top / Bottom</div>${centerBarHTML(tbB,'tb')}`:''}
+      </div>
+      <span class="center-verdict-chip" style="border:1px solid ${chipColor}40;background:${chipBg};color:${chipColor}">${cen.assessment||''}</span>
+      ${cen.notes?`<div class="cat-notes" style="margin-top:10px">${cen.notes}</div>`:''}
+    </div>`;
+  }
+
+  // ── Corners ──
+  h+=`<div class="section-label">Corners</div>`;
+  if(cor.score!=null){
+    const corners=[
+      {key:'topLeft',label:'Top Left'},
+      {key:'topRight',label:'Top Right'},
+      {key:'bottomLeft',label:'Bottom Left'},
+      {key:'bottomRight',label:'Bottom Right'}
+    ];
+    const dingCorners=corners.filter(c=>(cor[c.key]||{}).severity==='ding');
+    const warnCorners=corners.filter(c=>(cor[c.key]||{}).severity==='warn');
+
+    h+=`<div class="corners-card">
+      <div class="corners-title">
+        <span class="corner-icon" style="font-size:18px">🔲</span>
+        <span style="font-size:14px;font-weight:700;flex:1">Corners</span>
+        <span style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500" class="${gClass(cor.score)}">${parseFloat(cor.score).toFixed(1)}</span>
+      </div>`;
+
+    if(dingCorners.length||warnCorners.length){
+      h+=`<div class="dings-tally">`;
+      dingCorners.forEach(c=>{h+=`<div class="ding-pill">⚠ ${c.label} DING</div>`});
+      warnCorners.forEach(c=>{h+=`<div class="ding-pill warn">◆ ${c.label} Touch</div>`});
+      h+=`</div>`;
+    }
+
+    h+=`<div class="corners-grid">`;
+    corners.forEach(c=>{
+      const corner=cor[c.key]||{rating:'Unknown',detail:'',severity:'good'};
+      const cls=sevClass(corner.severity);
+      const gc2=cornerGClass(corner.rating);
+      const badge=corner.severity==='ding'?`<div class="ding-badge">DING</div>`:corner.severity==='warn'?`<div class="warn-badge">TOUCH</div>`:'';
+      h+=`<div class="corner-cell ${cls}">
+        ${badge}
+        <div class="corner-pos">${c.label}</div>
+        <div class="corner-rating ${gc2}">${corner.rating||'—'}</div>
+        <div class="corner-detail">${corner.detail||''}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+    if(cor.notes)h+=`<div class="cat-notes">${cor.notes}</div>`;
+    h+=`</div>`;
+  }
+
+  // ── Edges ──
+  h+=`<div class="section-label">Edges</div>`;
+  if(edg.score!=null){
+    const edges=[
+      {key:'top',label:'Top Edge'},
+      {key:'bottom',label:'Bottom Edge'},
+      {key:'left',label:'Left Edge'},
+      {key:'right',label:'Right Edge'}
+    ];
+    const dingEdges=edges.filter(e=>(edg[e.key]||{}).severity==='ding');
+    const warnEdges=edges.filter(e=>(edg[e.key]||{}).severity==='warn');
+
+    h+=`<div class="edges-card">
+      <div class="corners-title">
+        <span style="font-size:18px">📏</span>
+        <span style="font-size:14px;font-weight:700;flex:1">Edges</span>
+        <span style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500" class="${gClass(edg.score)}">${parseFloat(edg.score).toFixed(1)}</span>
+      </div>`;
+
+    if(dingEdges.length||warnEdges.length){
+      h+=`<div class="dings-tally">`;
+      dingEdges.forEach(e=>{h+=`<div class="ding-pill">⚠ ${e.label} DING</div>`});
+      warnEdges.forEach(e=>{h+=`<div class="ding-pill warn">◆ ${e.label} Wear</div>`});
+      h+=`</div>`;
+    }
+
+    h+=`<div class="edges-grid">`;
+    edges.forEach(e=>{
+      const edge=edg[e.key]||{rating:'Unknown',detail:'',severity:'good'};
+      const cls=sevClass(edge.severity);
+      const gc2=edgeGClass(edge.rating);
+      const badge=edge.severity==='ding'?`<div class="ding-badge">DING</div>`:edge.severity==='warn'?`<div class="warn-badge">WEAR</div>`:'';
+      h+=`<div class="edge-cell ${cls}" style="position:relative">
+        ${badge}
+        <div class="corner-pos">${e.label}</div>
+        <div class="corner-rating ${gc2}">${edge.rating||'—'}</div>
+        <div class="corner-detail">${edge.detail||''}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+    if(edg.notes)h+=`<div class="cat-notes">${edg.notes}</div>`;
+    h+=`</div>`;
+  }
+
+  // ── Surface ──
+  h+=`<div class="section-label">Surface</div>`;
+  if(sur.score!=null){
+    const defects=sur.defects||[];
+    const dingCount=defects.filter(d=>d.severity==='ding').length;
+    const warnCount=defects.filter(d=>d.severity==='warn').length;
+
+    h+=`<div class="surface-card">
+      <div class="corners-title">
+        <span style="font-size:18px">🔍</span>
+        <span style="font-size:14px;font-weight:700;flex:1">Surface</span>
+        <span style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500" class="${gClass(sur.score)}">${parseFloat(sur.score).toFixed(1)}</span>
+      </div>`;
+
+    // Gloss & DINGS summary
+    const glossColor=sur.glossRetention==='Pristine'||sur.glossRetention==='Excellent'?'var(--green)':sur.glossRetention==='Good'?'var(--amber)':'var(--red)';
+    h+=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 11px;display:flex;flex-direction:column;gap:2px;flex:1">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim)">Gloss</div>
+        <div style="font-size:12px;font-weight:600;color:${glossColor}">${sur.glossRetention||'—'}</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 11px;display:flex;flex-direction:column;gap:2px;flex:1">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim)">DINGS</div>
+        <div style="font-size:12px;font-weight:600;color:${dingCount>0?'var(--red)':'var(--green)'}">${dingCount} Critical${warnCount?` · ${warnCount} Minor`:''}</div>
+      </div>
+    </div>`;
+
+    if(defects.length){
+      h+=`<div class="defects-list">`;
+      defects.forEach(d=>{
+        const sevLabel=d.severity==='ding'?'DING':d.severity==='warn'?'MINOR':'CLEAN';
+        const sevClass2=d.severity==='ding'?'sev-ding':d.severity==='warn'?'sev-warn':'sev-ok';
+        const rowClass=d.severity==='ding'?'ding':d.severity==='warn'?'warn':'ok';
+        const icon=d.type&&d.type.toLowerCase().includes('scratch')?'💢':d.type&&d.type.toLowerCase().includes('crease')?'📐':d.type&&d.type.toLowerCase().includes('print')?'🖨':d.type&&d.type.toLowerCase().includes('dent')||d.type&&d.type.toLowerCase().includes('dimple')?'🔵':d.type&&d.type.toLowerCase().includes('haze')?'🌫':d.type&&d.type.toLowerCase().includes('stain')?'💧':d.type&&d.type.toLowerCase().includes('none')?'✅':'⚡';
+        h+=`<div class="defect-row ${rowClass}">
+          <div class="defect-icon">${icon}</div>
+          <div class="defect-body">
+            <div class="defect-title">${d.type||'Defect'} ${d.location?`<span style="font-weight:400;color:var(--text-dim);font-size:11px">· ${d.location}</span>`:''}</div>
+            <div class="defect-desc">${d.detail||''}</div>
+          </div>
+          <div class="defect-severity ${sevClass2}">${sevLabel}</div>
+        </div>`;
+      });
+      h+=`</div>`;
+    }
+    if(sur.notes)h+=`<div class="cat-notes">${sur.notes}</div>`;
+    h+=`</div>`;
+  }
+
+  // ── ID placeholder ──
+  h+=`<div class="section-label">Card Identification &amp; Value</div><div id="idCompSection"></div><div style="height:8px"></div>`;
+  document.getElementById('resultsScroll').innerHTML=h;
+}
+
+// ── RENDER ID + COMP ──
+function renderIDComp(data,gradeNum){
+  const sec=document.getElementById('idCompSection');if(!sec)return;
+  const comp=data.comp||{};
+  const prices=(comp.gradePrices||[]).filter(p=>p.price);
+  const maxP=Math.max(...prices.map(p=>p.price||0),1);
+  let h=`<div class="id-comp-card"><div class="id-comp-content">`;
+  h+=`<div class="id-header">
+    <div class="id-name-block">
+      <div class="id-player">${data.player||'Unknown'}</div>
+      <div class="id-year-set">${[data.year,data.brand,data.set].filter(Boolean).join(' · ')}</div>
+    </div>
+    ${data.isRookie?`<div class="id-rc-badge">RC</div>`:''}
+  </div>`;
+  const details=[['Sport',data.sport],['Team',data.team],['Card #',data.cardNumber],['Parallel',data.parallel]].filter(d=>d[1]);
+  if(details.length){
+    h+=`<div class="id-details-grid">`;
+    details.forEach(([l,v])=>{h+=`<div class="id-detail"><div class="id-detail-lbl">${l}</div><div class="id-detail-val">${v}</div></div>`});
+    h+=`</div>`;
+  }
+  if(data.confidence&&data.confidence!=='high'&&data.confidenceNote){
+    h+=`<div class="comp-notes" style="margin-bottom:12px">⚠ ${data.confidenceNote}</div>`;
+  }
+  h+=`<div class="comp-divider"></div>`;
+  h+=`<div class="comp-header"><div class="comp-lbl">Market Value</div><div class="comp-grade-context">At grade ${parseFloat(gradeNum).toFixed(1)}</div></div>`;
+  if(comp.gradedPrice!=null){
+    h+=`<div class="comp-price-row"><div class="comp-price">$${Number(comp.gradedPrice).toLocaleString()}</div><div class="comp-range">est. $${Number(comp.gradedLow||0).toLocaleString()}–$${Number(comp.gradedHigh||0).toLocaleString()}</div></div>`;
+  }
+  if(prices.length){
+    h+=`<div class="comp-grade-rows">`;
+    prices.forEach(p=>{
+      const bw=((p.price/maxP)*100).toFixed(0);
+      h+=`<div class="comp-grade-row"><div class="comp-grade-label">${p.grade}</div><div class="comp-grade-bar"><div class="comp-grade-fill" style="width:0%" data-w="${bw}%"></div></div><div class="comp-grade-price">$${Number(p.price).toLocaleString()}</div></div>`;
+    });
+    h+=`</div>`;
+  }
+  if(comp.marketNotes)h+=`<div class="comp-notes">${comp.marketNotes}</div>`;
+  h+=`<div class="comp-disclaimer">⚠ ${comp.lastUpdatedNote||'AI estimates only — verify on eBay or 130point.com for live pricing.'}</div>`;
+  h+=`</div></div>`;
+  sec.innerHTML=h;
+  requestAnimationFrame(()=>{
+    sec.querySelectorAll('.comp-grade-fill[data-w]').forEach(el=>{
+      const w=el.dataset.w;el.style.width='0%';setTimeout(()=>{el.style.width=w},80);
+    });
+  });
+}
+
+function showError(msg){
+  document.querySelectorAll('.error-box').forEach(e=>e.remove());
+  const box=document.createElement('div');box.className='error-box';box.textContent='⚠ '+msg;
+  document.querySelector('.setup-footer').before(box);setTimeout(()=>box.remove(),7000);
+}
+</script>
+</body>
+</html>
